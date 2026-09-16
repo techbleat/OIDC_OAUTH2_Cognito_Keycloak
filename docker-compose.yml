@@ -1,0 +1,94 @@
+services:
+
+  # ==========================================
+  # PostgreSQL - stores Keycloak configuration
+  # ==========================================
+  postgres:
+    image: postgres:16
+    container_name: keycloak-postgres2
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+
+    volumes:
+      - postgres_data2:/var/lib/postgresql/data2
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # ==========================================
+  # Keycloak
+  # ==========================================
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3
+    container_name: keycloak2
+    restart: unless-stopped
+
+    command: start-dev
+
+    environment:
+      # Keycloak admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+
+      # Database
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+
+  # ==========================================
+  # Python FastAPI Banking API
+  # ==========================================
+  banking-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: banking-api2
+    restart: unless-stopped
+
+    environment:
+
+      # Used by FastAPI container to communicate
+      # with Keycloak over Docker's internal network
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+
+      # Must match the "iss" claim inside the JWT.
+      # Our tokens are issued using localhost:9090.
+      KEYCLOAK_ISSUER_URL: http://localhost:8080
+
+      KEYCLOAK_REALM: banking
+      KEYCLOAK_CLIENT_ID: banking-app
+
+      AUTH_PROVIDER: cognito
+      AUTH_COGNITO_DOMAIN: http://localhost:9000
+      LOGOUT_URL: http://localhost:9000/logged-out
+
+    ports:
+      - "9000:9000"
+
+    depends_on:
+      - keycloak
+
+
+# ==========================================
+# Persistent storage
+# ==========================================
+volumes:
+  postgres_data2:
