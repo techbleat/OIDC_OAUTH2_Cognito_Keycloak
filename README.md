@@ -206,15 +206,16 @@ AUTH_PROVIDER
 
 to determine which Identity Provider should be used.
 
+The current application default is:
+
+```text
+cognito
+```
+
 Supported values are:
 
 ```text
 keycloak
-```
-
-and:
-
-```text
 cognito
 ```
 
@@ -332,26 +333,28 @@ email
 
 The application reads its authentication configuration from environment variables.
 
-Example:
+The current defaults in the app are:
 
 ```yaml
 environment:
 
-  AUTH_PROVIDER: ${AUTH_PROVIDER:-keycloak}
+  AUTH_PROVIDER: ${AUTH_PROVIDER:-cognito}
 
   # Keycloak
-
   KEYCLOAK_REALM: banking
   KEYCLOAK_CLIENT_ID: banking-app
   KEYCLOAK_PUBLIC_URL: http://localhost:8080
   KEYCLOAK_INTERNAL_URL: http://keycloak:8080
 
   # AWS Cognito
-
   COGNITO_REGION: eu-west-2
   COGNITO_USER_POOL_ID: <YOUR_USER_POOL_ID>
   COGNITO_CLIENT_ID: <YOUR_CLIENT_ID>
   COGNITO_CLIENT_SECRET: ${COGNITO_CLIENT_SECRET}
+  COGNITO_DOMAIN: https://<your-domain>.auth.<region>.amazoncognito.com
+
+  # Shared logout redirect
+  LOGOUT_URL: http://localhost:9000/logged-out
 ```
 
 Do **not** commit real client secrets to Git.
@@ -360,6 +363,18 @@ For example:
 
 ```bash
 export COGNITO_CLIENT_SECRET="your-client-secret"
+```
+
+If you are using Keycloak, set:
+
+```bash
+export AUTH_PROVIDER=keycloak
+```
+
+If you are using Cognito, set:
+
+```bash
+export AUTH_PROVIDER=cognito
 ```
 
 ---
@@ -379,6 +394,63 @@ Verify Docker:
 ```bash
 docker --version
 docker compose version
+```
+
+---
+
+# Run with the default provider (Cognito)
+
+The application defaults to Cognito unless `AUTH_PROVIDER` is overridden.
+
+Set the required Cognito environment values before starting the app:
+
+```bash
+export AUTH_PROVIDER=cognito
+export COGNITO_REGION="eu-west-2"
+export COGNITO_USER_POOL_ID="<YOUR_USER_POOL_ID>"
+export COGNITO_CLIENT_ID="<YOUR_CLIENT_ID>"
+export COGNITO_CLIENT_SECRET="your-client-secret"
+export COGNITO_DOMAIN="https://<your-domain>.auth.<region>.amazoncognito.com"
+```
+
+Then start or rebuild the app:
+
+```bash
+docker compose up -d --build
+```
+
+Open:
+
+```text
+http://localhost:9000
+```
+
+Click:
+
+```text
+Sign in securely
+```
+
+The browser is redirected to AWS Cognito Managed Login.
+
+After authentication:
+
+```text
+Cognito
+   ↓
+Authorization Code
+   ↓
+SecureBank /callback
+   ↓
+OIDC Tokens
+   ↓
+SecureBank Dashboard
+```
+
+The dashboard will display:
+
+```text
+AWS Cognito
 ```
 
 ---
@@ -434,68 +506,6 @@ Keycloak
 ```
 
 as the Identity Provider.
-
----
-
-# Run with AWS Cognito
-
-Set:
-
-```bash
-export AUTH_PROVIDER=cognito
-```
-
-Provide the Cognito client secret:
-
-```bash
-export COGNITO_CLIENT_SECRET="your-client-secret"
-```
-
-Start/rebuild the application:
-
-```bash
-docker compose up -d --build
-```
-
-Or:
-
-```bash
-AUTH_PROVIDER=cognito docker compose up -d --build
-```
-
-Open:
-
-```text
-http://localhost:9000
-```
-
-Click:
-
-```text
-Sign in securely
-```
-
-The browser will be redirected to AWS Cognito Managed Login.
-
-After authentication:
-
-```text
-Cognito
-   ↓
-Authorization Code
-   ↓
-SecureBank /callback
-   ↓
-OIDC Tokens
-   ↓
-SecureBank Dashboard
-```
-
-The dashboard will display:
-
-```text
-AWS Cognito
-```
 
 ---
 
