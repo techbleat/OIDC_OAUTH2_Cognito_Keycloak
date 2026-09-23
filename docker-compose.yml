@@ -73,10 +73,15 @@ services:
       # Our tokens are issued using localhost:9090.
       KEYCLOAK_ISSUER_URL: http://localhost:8080
 
-      KEYCLOAK_REALM: banking
-      KEYCLOAK_CLIENT_ID: banking-app
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-banking}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-banking-app}
 
-      AUTH_PROVIDER: cognito
+      COGNITO_CLIENT_ID: ${COGNITO_CLIENT_ID}
+      COGNITO_USER_POOL_ID: ${COGNITO_USER_POOL_ID}
+      COGNITO_CLIENT_SECRET: ${COGNITO_CLIENT_SECRET}
+      COGNITO_DOMAIN: ${COGNITO_DOMAIN}
+
+      AUTH_PROVIDER: ${AUTH_PROVIDER:-cognito}
       AUTH_COGNITO_DOMAIN: http://localhost:9000
       LOGOUT_URL: http://localhost:9000/logged-out
 

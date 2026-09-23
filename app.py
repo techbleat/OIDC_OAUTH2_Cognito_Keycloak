@@ -93,12 +93,12 @@ elif AUTH_PROVIDER == "cognito":
 
     USER_POOL_ID = os.getenv(
         "COGNITO_USER_POOL_ID",
-        "eu-west-2_KASdvJHTZ"
+        "eu-west-2_MEXDkdeio"
     )
 
     CLIENT_ID = os.getenv(
         "COGNITO_CLIENT_ID",
-        "407g840b51ul0bkpjvfaf4cjuu"
+        "7j4mg6ejkajtcere7rilcf8qik"
     )
 
     CLIENT_SECRET = os.getenv(
@@ -114,8 +114,7 @@ elif AUTH_PROVIDER == "cognito":
         f"{ISSUER}/.well-known/openid-configuration"
     )
     COGNITO_DOMAIN = os.getenv(
-        "COGNITO_DOMAIN",
-        "https://eu-west-2kasdvjhtz.auth.eu-west-2.amazoncognito.com"
+        "COGNITO_DOMAIN"
     ) 
 
     LOGOUT_URL = os.getenv(
